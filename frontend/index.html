@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vidhi Setu — AI Legislative Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-title">Vidhi <span>Setu</span></div>
+      <div class="logo-sub">विधि सेतु &nbsp;·&nbsp; AI Legislative Analyzer</div>
+    </div>
+    <div class="header-badges">
+      <span class="badge">ScaleDown Powered</span>
+      <span class="badge badge-gold">858 Central Acts</span>
+    </div>
+  </div>
+  <div class="header-rule"></div>
+</header>
+
+<!-- ── Nav ────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-tab="ask" onclick="switchTab('ask',this)">Ask a Question</button>
+    <button class="nav-btn" data-tab="alerts" onclick="switchTab('alerts',this)">Alert Profiles</button>
+    <button class="nav-btn" data-tab="compare" onclick="switchTab('compare',this)">Compare Bills</button>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 1 — ASK A QUESTION
+══════════════════════════════════════════════════════ -->
+<section id="tab-ask" class="tab active">
+
+  <div class="intro-block">
+    <div class="intro-eyebrow">Citizen's Legal Assistant</div>
+    <h1 class="intro-title">Ask any question about Indian law</h1>
+    <p class="intro-body">
+      Type your question in <em>any language</em> — Hindi, Marathi, Tamil, Telugu, Bengali, or English.
+      Vidhi Setu searches 858 Central Acts, extracts only the relevant clauses using ScaleDown,
+      and answers in plain words.
+    </p>
+  </div>
+
+  <!-- Stats row (shown after first answer) -->
+  <div class="stats-row" id="qa-stats" style="display:none">
+    <div class="stat-card">
+      <div class="stat-num" id="s-saved">—</div>
+      <div class="stat-label">Tokens saved</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-ratio">—</div>
+      <div class="stat-label">Compression ratio</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-acts">—</div>
+      <div class="stat-label">Acts searched</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-group">
+      <label class="field-label">Your question <span class="label-hint">— in any Indian language</span></label>
+      <textarea id="qa-question" class="field-textarea" rows="4"
+        placeholder="e.g.  क्या मैं अपना आधार डेटा हटा सकती हूं?
+e.g.  Can I delete my Aadhaar data?
+e.g.  माझा आधार डेटा कोण पाहू शकतो?"></textarea>
+    </div>
+
+    <div class="quick-examples">
+      <span class="examples-label">Quick examples —</span>
+      <button class="example-btn" onclick="setQ('Can I delete my Aadhaar data? What rights do I have?')">Aadhaar data rights</button>
+      <button class="example-btn" onclick="setQ('What is the minimum wage for agricultural workers?')">Minimum wages</button>
+      <button class="example-btn" onclick="setQ('मुझे मातृत्व अवकाश कितने दिन मिलता है?')">Maternity leave</button>
+      <button class="example-btn" onclick="setQ('What penalty can I face for not paying income tax?')">Tax penalties</button>
+    </div>
+
+    <button class="btn-primary" id="qa-btn" onclick="runAnalysis()">
+      Ask Vidhi Setu &nbsp;→
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="qa-result" style="display:none">
+    <div class="result-card">
+      <div class="result-header">
+        <div class="result-dot"></div>
+        <span id="qa-acts-label" class="result-acts"></span>
+      </div>
+      <div class="result-answer" id="qa-answer"></div>
+
+      <div class="compression-block">
+        <div class="compression-row">
+          <span class="compression-label">ScaleDown compression</span>
+          <span class="compression-nums" id="c-nums">—</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="c-bar" style="width:0%"></div>
+        </div>
+        <div class="compression-savings" id="c-savings"></div>
+      </div>
+
+      <div class="clauses-toggle" onclick="toggleClauses()">
+        <span id="clauses-arrow">▶</span>&nbsp; View clauses extracted by ScaleDown
+      </div>
+      <pre class="clauses-box" id="clauses-box" style="display:none"></pre>
+    </div>
+  </div>
+
+  <div id="qa-empty" class="empty-state">
+    <div class="empty-icon">⚖</div>
+    <p>Ask a question above in any language.<br/>
+    Vidhi Setu searches 858 Indian Central Acts automatically.</p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 2 — ALERT PROFILES
+══════════════════════════════════════════════════════ -->
+<section id="tab-alerts" class="tab">
+
+  <div class="intro-block">
+    <div class="intro-eyebrow">Personalized Alerts — Bonus Feature</div>
+    <h1 class="intro-title">Which topics does this bill cover?</h1>
+    <p class="intro-body">
+      Paste any new bill. Select your interest areas. Vidhi Setu batch-compresses
+      the bill against each topic using ScaleDown and tells you exactly what affects you.
+    </p>
+  </div>
+
+  <div class="form-card">
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="field-label">Bill title</label>
+        <input type="text" id="al-title" class="field-input" placeholder="e.g. Farmers Produce Trade Act 2025"/>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Your interest areas</label>
+        <div class="topics-grid" id="topics-grid"></div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:1rem">
+      <label class="field-label">Bill text</label>
+      <textarea id="al-bill" class="field-textarea" rows="7" placeholder="Paste the full bill text here…"></textarea>
+    </div>
+    <button class="btn-primary btn-green" id="al-btn" onclick="runAlerts()">
+      Check Topics &nbsp;→
+    </button>
+  </div>
+
+  <div id="al-result" style="display:none"></div>
+  <div id="al-empty" class="empty-state">
+    <div class="empty-icon">🔔</div>
+    <p>Select your interest areas and paste a bill.<br/>
+    ScaleDown batch-compresses it against each topic simultaneously.</p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 3 — COMPARE BILLS
+══════════════════════════════════════════════════════ -->
+<section id="tab-compare" class="tab">
+
+  <div class="intro-block">
+    <div class="intro-eyebrow">Bill Comparison — Bonus Feature</div>
+    <h1 class="intro-title">What changed between two versions?</h1>
+    <p class="intro-body">
+      Paste an old act and a new bill. Ask what changed for you.
+      ScaleDown compresses both against your question and Claude explains the difference in plain language.
+    </p>
+  </div>
+
+  <div class="form-card">
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="field-label">Old act title</label>
+        <input type="text" id="cp-old-title" class="field-input" placeholder="e.g. IT Act 2000"/>
+      </div>
+      <div class="form-group">
+        <label class="field-label">New bill title</label>
+        <input type="text" id="cp-new-title" class="field-input" placeholder="e.g. Digital India Act 2025"/>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="field-label">Old act text</label>
+        <textarea id="cp-old" class="field-textarea" rows="7" placeholder="Paste the original act…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="field-label">New bill text</label>
+        <textarea id="cp-new" class="field-textarea" rows="7" placeholder="Paste the new bill…"></textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="field-label">What do you want to compare?</label>
+      <textarea id="cp-question" class="field-textarea" rows="2" placeholder="e.g. What are my data rights under this law?"></textarea>
+    </div>
+    <button class="btn-primary btn-indigo" id="cp-btn" onclick="runCompare()">
+      Compare Bills &nbsp;→
+    </button>
+  </div>
+
+  <div id="cp-result" style="display:none"></div>
+  <div id="cp-empty" class="empty-state">
+    <div class="empty-icon">⚖</div>
+    <p>Paste two versions of a law and ask what changed.<br/>
+    ScaleDown handles 200k+ tokens across two documents.</p>
+  </div>
+
+</section>
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    Vidhi Setu &nbsp;·&nbsp; विधि सेतु &nbsp;·&nbsp;
+    Built with ScaleDown + Groq + Indian Central Acts &nbsp;·&nbsp;
+    Intel Unnati Hackathon 2025
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
